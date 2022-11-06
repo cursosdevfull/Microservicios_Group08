@@ -1,0 +1,7 @@
+1. Instalar NodeJS
+
+2. Copiar los archivos
+
+3. Instalar dependencias
+
+4. Ejecutar la app (npm run start)

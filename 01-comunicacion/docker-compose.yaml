@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  frontend:
+    container_name: frontend-ms
+    image: frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        - BASE_DIR=frontend
+    environment:
+      - PORT=3000
+      - SERVICE_BACKEND1=http://localhost:8010/api/message
+    ports:
+      - "8000:3000"
+    networks:
+      - net-frontend-backend
+
+  backend1:
+    container_name: backend1-ms
+    image: backend1
+    build:
+      context: .
+      dockerfile: backend1/Dockerfile
+      args:
+        - BASE_DIR=backend1
+    environment:
+      - PORT=3010
+      - SERVICE_BACKEND2=http://backend2:3020/api/message
+    ports:
+      - "8010:3010"
+    networks:
+      - net-frontend-backend
+      - net-backend-backend
+    depends_on:
+      - frontend
+
+  backend2:
+    container_name: backend2-ms
+    image: backend2
+    build:
+      context: .
+      dockerfile: backend2/Dockerfile
+      args:
+        - BASE_DIR=backend2
+    environment:
+      - PORT=3020
+    networks:
+      - net-backend-backend
+    depends_on:
+      - backend1
+
+networks:
+  net-frontend-backend:
+  net-backend-backend:

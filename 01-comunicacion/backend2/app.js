@@ -4,7 +4,7 @@ const path = require("path");
 
 const app = express();
 
-app.use();
+app.use(cors());
 app.use("/api", require("./routes"));
 
 app.get("/healthcheck", (req, res) => res.send("Todo está ok"));

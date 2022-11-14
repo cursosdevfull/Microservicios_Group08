@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:3.6
+    container_name: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-vol:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: test
+    networks:
+      - net-template
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - net-template
+
+volumes:
+  mongo-vol:
+
+networks:
+  net-template:

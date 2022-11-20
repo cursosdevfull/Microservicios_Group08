@@ -1,3 +1,6 @@
+import 'es6-shim';
+import 'reflect-metadata';
+
 import BrokerBootstrap from './bootstrap/broker.boostrap';
 import DatabaseBootstrap from './bootstrap/database.bootstrap';
 import ServerBootstrap from './bootstrap/server.bootstrap';

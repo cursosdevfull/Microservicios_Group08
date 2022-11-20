@@ -7,7 +7,9 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "cache",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

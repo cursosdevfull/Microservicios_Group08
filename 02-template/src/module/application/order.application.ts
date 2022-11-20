@@ -1,14 +1,28 @@
+import { InternalServerErrorException } from '../../core/exceptions/internalserver.exception';
 import { Order } from '../domain/entities/order';
+import { BrokerRepository } from '../domain/repositories/broker.repository';
 import { OrderRepository } from '../domain/repositories/order.repository';
 
 export class OrderApplication {
-  repository: OrderRepository;
+  private repositoryOrder: OrderRepository;
+  private repositoryBroker: BrokerRepository;
 
-  constructor(repository: OrderRepository) {
-    this.repository = repository;
+  constructor(
+    repositoryOrder: OrderRepository,
+    repositoryBroker: BrokerRepository
+  ) {
+    this.repositoryOrder = repositoryOrder;
+    this.repositoryBroker = repositoryBroker;
   }
 
-  save(order: Order): Order {
-    return this.repository.save(order);
+  async save(order: Order): Promise<Order> {
+    const orderResult = await this.repositoryOrder.save(order);
+    if (orderResult.isErr()) {
+      throw new InternalServerErrorException(orderResult.error.message);
+    }
+
+    await this.repositoryBroker.sent(orderResult.value);
+
+    return orderResult.value;
   }
 }

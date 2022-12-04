@@ -1,6 +1,41 @@
 version: "3.8"
 
 services:
+  gateway:
+    container_name: gateway
+    image: gateway
+    restart: always
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+      args:
+        - BASE_DIR=gateway
+    env_file:
+      - ./gateway/.env
+    ports:
+      - "9500:8000"
+    networks:
+      - net-ms
+    depends_on:
+      - order-ms
+      - rabbitmq
+
+  auth-ms:
+    container_name: auth-ms
+    image: auth-ms
+    restart: always
+    build:
+      context: .
+      dockerfile: auth-ms/Dockerfile
+      args:
+        - BASE_DIR=auth-ms
+    env_file:
+      - ./auth-ms/.env
+    networks:
+      - net-ms
+    depends_on:
+      - mongo-auth
+
   order-ms:
     container_name: order-ms
     image: order-ms
@@ -12,8 +47,6 @@ services:
         - BASE_DIR=order-ms
     env_file:
       - ./order-ms/.env
-    ports:
-      - "3500:3500"
     networks:
       - net-ms
     depends_on:
@@ -31,8 +64,6 @@ services:
         - BASE_DIR=payment-ms
     env_file:
       - ./payment-ms/.env
-    ports:
-      - "3600:3600"
     networks:
       - net-ms
     depends_on:
@@ -50,8 +81,6 @@ services:
         - BASE_DIR=store-ms
     env_file:
       - ./store-ms/.env
-    ports:
-      - "3700:3700"
     networks:
       - net-ms
     depends_on:
@@ -69,8 +98,6 @@ services:
         - BASE_DIR=delivery-ms
     env_file:
       - ./delivery-ms/.env
-    ports:
-      - "3800:3800"
     networks:
       - net-ms
     depends_on:
@@ -137,6 +164,21 @@ services:
     networks:
       - net-ms
 
+  mongo-auth:
+    image: mongo:3.6
+    container_name: mongo-auth
+    restart: always
+    ports:
+      - 27021:27017
+    volumes:
+      - mongo-vol-auth:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: test
+    networks:
+      - net-ms
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
@@ -157,6 +199,7 @@ volumes:
   mongo-vol-payment:
   mongo-vol-store:
   mongo-vol-delivery:
+  mongo-vol-auth:
 
 networks:
   net-ms:

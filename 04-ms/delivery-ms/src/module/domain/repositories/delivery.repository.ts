@@ -3,4 +3,5 @@ import { Delivery } from '../entities/delivery';
 
 export interface DeliveryRepository {
   save(delivery: Delivery): Promise<DeliveryResult>;
+  // update(transactionId: string, status: STATUS): Promise<string>;
 }

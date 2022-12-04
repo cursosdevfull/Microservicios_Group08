@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import express, { NextFunction, Request, Response } from 'express';
 
+import { authentication } from './middlewares/authentication';
 import AppService from './services/app.service';
 
 type middleware = (req: Request, res: Response, next: NextFunction) => void;
@@ -21,6 +22,24 @@ class App {
     {
       origin: "/api/order",
       target: `${AppService.PATH_ORDER}/order`,
+      method: "POST",
+      middlewares: [authentication],
+    },
+    {
+      origin: "/api/auth/register",
+      target: `${AppService.PATH_AUTH}/auth/register`,
+      method: "POST",
+      middlewares: [],
+    },
+    {
+      origin: "/api/auth/login",
+      target: `${AppService.PATH_AUTH}/auth/login`,
+      method: "POST",
+      middlewares: [],
+    },
+    {
+      origin: "/api/auth/get-new-access-token",
+      target: `${AppService.PATH_AUTH}/auth/get-new-access-token`,
       method: "POST",
       middlewares: [],
     },
@@ -63,3 +82,5 @@ class App {
     };
   }
 }
+
+export default new App().expressApp;

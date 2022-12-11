@@ -11,6 +11,21 @@ export class BrokerInfrastructure implements BrokerRepository {
     await channel.assertQueue(queueName, { durable: true });
     return channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
   }
+
+  async sentError(message: unknown): Promise<any> {
+    const channel = BrokerBootstrap.channel;
+    const exchangeName = process.env.EXCHANGE_NAME_REJECT || "exchange-reject";
+    const exchangeType = process.env.EXCHANGE_TYPE_REJECT || "topic";
+    const routingKey = process.env.ROUTING_KEY_REJECT || "payment.error";
+
+    await channel.assertExchange(exchangeName, exchangeType, { durable: true });
+    channel.publish(
+      exchangeName,
+      routingKey,
+      Buffer.from(JSON.stringify(message))
+    );
+  }
+
   async receive(): Promise<any> {
     const channel = BrokerBootstrap.channel;
     const queueName =
@@ -21,11 +36,29 @@ export class BrokerInfrastructure implements BrokerRepository {
       this.consumerAccept.bind(this)
     );
 
+    const exchangeNameReject =
+      process.env.EXCHANGE_NAME_REJECT || "exchange-reject";
+    const exchangeTypeReject = process.env.EXCHANGE_TYPE_REJECT || "topic";
+    const routingKeyReject = process.env.ROUTING_KEY_REJECT.split(",") || [
+      "delivery.error",
+      "store.error",
+    ];
+
+    console.log("RoutingKeyReject", routingKeyReject);
+
+    await ReceiveMessageService.orderConfirmedOrRejected(
+      channel,
+      this.consumerReject.bind(this),
+      exchangeNameReject,
+      exchangeTypeReject,
+      routingKeyReject
+    );
+
     const exchangeName = process.env.EXCHANGE_NAME || "exchange-order";
     const exchangeType = process.env.EXCHANGE_TYPE || "fanout";
     const routingKey = process.env.ROUTING_KEY || "";
 
-    return await ReceiveMessageService.orderConfirmed(
+    return await ReceiveMessageService.orderConfirmedOrRejected(
       channel,
       this.consumerOrderConfirmed.bind(this),
       exchangeName,
@@ -39,6 +72,16 @@ export class BrokerInfrastructure implements BrokerRepository {
     await Model.create(content);
     UtilsBrokerService.confirmMessage(BrokerBootstrap.channel, message);
     this.sent(content);
+  }
+
+  async consumerReject(message: any) {
+    console.log("Order rejected: ", message.content.toString());
+    const content = JSON.parse(message.content.toString());
+    await Model.updateOne(
+      { transactionId: content.transactionId },
+      { status: "CANCELLED" }
+    );
+    UtilsBrokerService.confirmMessage(BrokerBootstrap.channel, message);
   }
 
   async consumerOrderConfirmed(message: any) {

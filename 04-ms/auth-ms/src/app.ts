@@ -27,6 +27,7 @@ class App {
     const router = new AuthRouter(controller);
 
     this.expressApp.use("/auth", router.router);
+    this.expressApp.get("/", (req, res) => res.send("All's ok"));
   }
 
   mountErrors() {}

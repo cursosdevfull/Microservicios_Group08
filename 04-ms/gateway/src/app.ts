@@ -57,11 +57,16 @@ class App {
   }
 
   mountRoutes(): void {
+    console.log("this.routes: ", this.routes);
     this.routes.forEach((route) => {
       const { origin, target, middlewares } = route;
       const method = route.method.toLowerCase();
       this.expressApp[method](origin, ...middlewares, this.execute(route));
     });
+
+    this.expressApp.get("/", (req: Request, res: Response) =>
+      res.send("All's ok")
+    );
   }
 
   execute(route: Route) {
@@ -72,6 +77,8 @@ class App {
         responseType: "json",
         data: { ...req.body },
       };
+
+      console.log("request: ", request);
 
       try {
         const result = await axios(request);

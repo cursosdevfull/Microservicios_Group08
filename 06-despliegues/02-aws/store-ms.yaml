@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: store-ms
+  template:
+    metadata:
+      labels:
+        app: store-ms
+    spec:
+      containers:
+        - name: store-container
+          image: 282865065290.dkr.ecr.us-east-1.amazonaws.com/store-ms
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8060
+          env:
+            - name: PORT
+              value: "8060"
+            - name: MONGO_HOST
+              value: mongo-svc
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_USERNAME
+              value: root
+            - name: MONGO_PASSWORD
+              value: root
+            - name: MONGO_AUTH_SOURCE
+              value: admin
+            - name: EXCHANGE_NAME
+              value: EXCHANGE-ORDER-COMPLETED
+            - name: EXCHANGE_TYPE
+              value: fanout
+            - name: QUEUE_NAME
+              value: QUEUE_STORE_CREATED
+            - name: QUEUE_NAME_RECEIVE_ORDER
+              value: QUEUE_PAYMENT_CREATED
+            - name: EXCHANGE_NAME_REJECT
+              value: EXCHANGE-ORDER-REJECTED
+            - name: EXCHANGE_TYPE_REJECT
+              value: topic
+            - name: ROUTING_KEY_REJECT
+              value: delivery.error
+            - name: RABBITMQ_HOST
+              value: rabbitmq-svc:5672
+            - name: MONGO_DATABASE
+              value: storedb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: store-svc
+spec:
+  selector:
+    app: store-ms
+  ports:
+    - port: 80
+      targetPort: 8060
+      protocol: TCP
+  type: ClusterIP

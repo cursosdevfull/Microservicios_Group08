@@ -29,6 +29,7 @@ class App {
     const router = new OrderRouter(controller);
 
     this.expressApp.use("/order", router.router);
+    this.expressApp.get("/", (req, res) => res.send("All's ok"));
   }
 
   mountErrors() {}

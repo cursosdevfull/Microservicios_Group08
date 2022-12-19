@@ -14,6 +14,7 @@ export default class {
 
   async register(req: Request, res: Response) {
     const { name, email, password } = req.body;
+    console.log("register", req.body);
 
     const auth = await AuthFactory.create(name, email, password);
     const authSaved = await this.app.register(auth);
@@ -22,6 +23,7 @@ export default class {
 
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
+    console.log("login", req.body);
 
     const tokens: Tokens | null = await this.app.login(email, password);
     res.json(tokens);

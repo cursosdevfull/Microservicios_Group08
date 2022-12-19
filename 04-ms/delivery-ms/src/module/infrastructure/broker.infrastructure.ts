@@ -52,8 +52,8 @@ export class BrokerInfrastructure implements BrokerRepository {
     content.status = "APPROVED";
     await Model.create(content);
     UtilsBrokerService.confirmMessage(BrokerBootstrap.channel, message);
-    //this.sent(content);
-    this.sentError(content);
+    this.sent(content);
+    //this.sentError(content);
   }
 
   async consumerDeliveryConfirmed(message: any) {

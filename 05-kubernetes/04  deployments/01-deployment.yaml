@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: contenedor1
-          image: python:3.6-alpine
+          image: python:3.7-alpine
           command:
             [
               "sh",

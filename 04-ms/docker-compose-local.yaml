@@ -1,0 +1,205 @@
+version: "3.8"
+
+services:
+  gateway:
+    container_name: gateway
+    image: localhost:5000/gateway
+    restart: always
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+      args:
+        - BASE_DIR=gateway
+    env_file:
+      - ./gateway/.env
+    ports:
+      - "9500:8000"
+    networks:
+      - net-ms
+    depends_on:
+      - order-ms
+      - rabbitmq
+
+  auth-ms:
+    container_name: auth-ms
+    image: localhost:5000/auth-ms
+    restart: always
+    build:
+      context: .
+      dockerfile: auth-ms/Dockerfile
+      args:
+        - BASE_DIR=auth-ms
+    env_file:
+      - ./auth-ms/.env
+    networks:
+      - net-ms
+    depends_on:
+      - mongo-auth
+
+  order-ms:
+    container_name: order-ms
+    image: localhost:5000/order-ms
+    restart: always
+    build:
+      context: .
+      dockerfile: order-ms/Dockerfile
+      args:
+        - BASE_DIR=order-ms
+    env_file:
+      - ./order-ms/.env
+    networks:
+      - net-ms
+    depends_on:
+      - mongo-order
+      - rabbitmq
+
+  payment-ms:
+    container_name: payment-ms
+    image: localhost:5000/payment-ms
+    restart: always
+    build:
+      context: .
+      dockerfile: payment-ms/Dockerfile
+      args:
+        - BASE_DIR=payment-ms
+    env_file:
+      - ./payment-ms/.env
+    networks:
+      - net-ms
+    depends_on:
+      - mongo-payment
+      - rabbitmq
+
+  store-ms:
+    container_name: store-ms
+    image: localhost:5000/store-ms
+    restart: always
+    build:
+      context: .
+      dockerfile: store-ms/Dockerfile
+      args:
+        - BASE_DIR=store-ms
+    env_file:
+      - ./store-ms/.env
+    networks:
+      - net-ms
+    depends_on:
+      - mongo-store
+      - rabbitmq
+
+  delivery-ms:
+    container_name: delivery-ms
+    image: localhost:5000/delivery-ms
+    restart: always
+    build:
+      context: .
+      dockerfile: delivery-ms/Dockerfile
+      args:
+        - BASE_DIR=delivery-ms
+    env_file:
+      - ./delivery-ms/.env
+    networks:
+      - net-ms
+    depends_on:
+      - mongo-delivery
+      - rabbitmq
+
+  mongo-order:
+    image: mongo:3.6
+    container_name: mongo-order
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-vol-order:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: test
+    networks:
+      - net-ms
+
+  mongo-payment:
+    image: mongo:3.6
+    container_name: mongo-payment
+    restart: always
+    ports:
+      - 27018:27017
+    volumes:
+      - mongo-vol-payment:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: test
+    networks:
+      - net-ms
+
+  mongo-store:
+    image: mongo:3.6
+    container_name: mongo-store
+    restart: always
+    ports:
+      - 27019:27017
+    volumes:
+      - mongo-vol-store:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: test
+    networks:
+      - net-ms
+
+  mongo-delivery:
+    image: mongo:3.6
+    container_name: mongo-delivery
+    restart: always
+    ports:
+      - 27020:27017
+    volumes:
+      - mongo-vol-delivery:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: test
+    networks:
+      - net-ms
+
+  mongo-auth:
+    image: mongo:3.6
+    container_name: mongo-auth
+    restart: always
+    ports:
+      - 27021:27017
+    volumes:
+      - mongo-vol-auth:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: test
+    networks:
+      - net-ms
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - net-ms
+
+volumes:
+  mongo-vol-order:
+  mongo-vol-payment:
+  mongo-vol-store:
+  mongo-vol-delivery:
+  mongo-vol-auth:
+
+networks:
+  net-ms:
